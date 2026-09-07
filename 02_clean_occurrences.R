@@ -120,10 +120,10 @@ gap_map <- ggplot() +
   scale_fill_manual(values = band_cols, name = "records per\n~5 km cell", drop = FALSE) +
   coord_sf(xlim = c(6, 7.6), ylim = c(49.4, 50.9)) +
   labs(
-    title    = "Fire salamander recording intensity — Mosel/Eifel (Germany)",
-    subtitle = paste(n_de, "recorded occurrences · blue = recorded-occurrence density"),
-    caption  = "GBIF citizen-science records. Presence-only: blank = no records, NOT confirmed absence."
-  ) +
+    title    = "Fire salamander reported occurrences — Mosel/Eifel (Germany)",
+    subtitle = paste(n_de, "reported occurrences · records per ~5 km cell"),
+    caption  = "GBIF citizen-science records. Counts reflect reporting, not just abundance; blank = no records, NOT confirmed absence."
+    ) +
   theme_minimal()
 
 gap_map
@@ -131,6 +131,10 @@ gap_map
 # --- 6. save outputs ---
 dir.create("figs",       showWarnings = FALSE)
 dir.create("data-clean", showWarnings = FALSE)
-ggsave("figs/recording_intensity_mosel.png", gap_map, width = 7, height = 6, dpi = 150)
-write.csv(occ_de, "data-clean/salamander_occ_de.csv", row.names = FALSE)
+ggsave("figs/reported_occurrences_mosel.png", gap_map, width = 7, height = 6, dpi = 150)
+
+occ_out <- as.data.frame(sf::st_drop_geometry(occ_de))
+occ_out <- occ_out[, !sapply(occ_out, is.list)]        # keep only plain columns
+write.csv(occ_out, "data-clean/salamander_occ_de.csv", row.names = FALSE)
+
 usethis::use_git_ignore("data-clean/")

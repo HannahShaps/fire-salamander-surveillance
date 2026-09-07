@@ -28,7 +28,7 @@ ggplot() +
   coord_sf(xlim = c(6, 7.6), ylim = c(49.4, 50.9)) +
   labs(
     title    = "Fire salamander occurrences (GBIF) — Mosel/Eifel (Germany)",
-    subtitle = paste(nrow(occ_de), "recorded occurrences"),
+    subtitle = paste(nrow(occ_de), "reported occurrences"),
     caption  = "GBIF citizen-science records. Presence-only: shows where recorded, not where surveyed."
   ) +
   theme_minimal()
