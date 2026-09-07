@@ -1,16 +1,19 @@
 # 02_clean_occurrences.R
-# Fire salamander surveillance — clean GBIF occurrences, split by source,
-# and map survey coverage (sampling gaps) for the Mosel/Eifel.
+# Fire salamander — clean GBIF occurrences, scope to Germany, split by source,
+# and map RECORDING INTENSITY (presence-only) for the Mosel/Eifel.
 
 # --- packages (install once if needed) ---
 # install.packages(c("rgbif","dplyr","ggplot2","sf","rnaturalearth",
-#                     "rnaturalearthdata","CoordinateCleaner","usethis"))
+#                     "rnaturalearthdata","CoordinateCleaner","ggrepel","usethis"))
+
+install.packages("ggrepel")
 library(rgbif)
 library(dplyr)
 library(ggplot2)
 library(sf)
 library(rnaturalearth)
 library(CoordinateCleaner)
+library(ggrepel)
 
 # --- 1. pull all records in the Mosel/Eifel box ---
 gbif <- occ_data(
@@ -62,18 +65,16 @@ occ_clean <- occ_clean |>
   ))
 print(count(occ_clean, source, sort = TRUE))
 
-
-#3b. Checking sampling spread
-summary(full_grid$records[full_grid$records > 0])
-max(full_grid$records)
-
-
-# --- 4. grid (~5 km cells), clip to Germany, band records (skew-aware) ---
+# --- 3b. scope occurrences to the German portion (records, grid & PAs agree) ---
 germany <- ne_countries(scale = "medium", country = "Germany", returnclass = "sf")
+occ_sf  <- st_as_sf(occ_clean, coords = c("decimalLongitude", "decimalLatitude"),
+                    crs = 4326, remove = FALSE)
+occ_de  <- occ_clean[lengths(st_within(occ_sf, germany)) > 0, ]
+n_de    <- nrow(occ_de)
 
+# --- 4. grid the German records (~5 km), clip to Germany, band (skew-aware) ---
 cell <- 0.05
-
-grid_counts <- occ_clean |>
+grid_counts <- occ_de |>
   mutate(
     lon_bin = floor(decimalLongitude / cell) * cell + cell / 2,
     lat_bin = floor(decimalLatitude  / cell) * cell + cell / 2
@@ -89,8 +90,7 @@ full_grid <- expand.grid(
 
 grid_pts  <- st_as_sf(full_grid, coords = c("lon_bin", "lat_bin"),
                       crs = 4326, remove = FALSE)
-inside    <- lengths(st_within(grid_pts, germany)) > 0
-full_grid <- full_grid[inside, ] |>
+full_grid <- full_grid[lengths(st_within(grid_pts, germany)) > 0, ] |>
   mutate(
     records_band = cut(
       records,
@@ -99,7 +99,7 @@ full_grid <- full_grid[inside, ] |>
     )
   )
 
-# --- 5. map: survey coverage (skew-aware blue scale) ---
+# --- 5. map: recording intensity (presence-only) ---
 cities <- data.frame(
   name = c("Trier", "Koblenz", "Cochem", "Bitburg"),
   lon  = c(6.64, 7.59, 7.17, 6.53),
@@ -107,27 +107,22 @@ cities <- data.frame(
 )
 
 band_cols <- c(
-  "0 (none)" = "#deebf7",
-  "1-2"      = "#c6dbef",
-  "3-5"      = "#9ecae1",
-  "6-10"     = "#6baed6",
-  "11-20"    = "#4292c6",
-  "21-40"    = "#2171b5",
-  "41+"      = "#084594"
+  "0 (none)" = "#deebf7", "1-2" = "#c6dbef", "3-5" = "#9ecae1",
+  "6-10" = "#6baed6", "11-20" = "#4292c6", "21-40" = "#2171b5", "41+" = "#084594"
 )
 
 gap_map <- ggplot() +
   geom_tile(data = full_grid, aes(lon_bin, lat_bin, fill = records_band)) +
   geom_sf(data = germany, fill = NA, color = "grey40", linewidth = 0.3) +
   geom_point(data = cities, aes(lon, lat), color = "red", size = 1.6) +
-  geom_text(data = cities, aes(lon, lat, label = name),
-            color = "red", size = 3, hjust = -0.15, vjust = 0.3) +
+  geom_text_repel(data = cities, aes(lon, lat, label = name),
+                  color = "red", size = 3, min.segment.length = 0, seed = 1) +
   scale_fill_manual(values = band_cols, name = "records per\n~5 km cell", drop = FALSE) +
   coord_sf(xlim = c(6, 7.6), ylim = c(49.4, 50.9)) +
   labs(
-    title    = "Fire salamander survey coverage — Mosel/Eifel",
-    subtitle = paste(nrow(occ_clean), "cleaned records · light blue = unsampled"),
-    caption  = "Open citizen-science data via GBIF. Bands are finer at low counts (where most cells sit)."
+    title    = "Fire salamander recording intensity — Mosel/Eifel (Germany)",
+    subtitle = paste(n_de, "recorded occurrences · blue = recorded-occurrence density"),
+    caption  = "GBIF citizen-science records. Presence-only: blank = no records, NOT confirmed absence."
   ) +
   theme_minimal()
 
@@ -136,7 +131,6 @@ gap_map
 # --- 6. save outputs ---
 dir.create("figs",       showWarnings = FALSE)
 dir.create("data-clean", showWarnings = FALSE)
-ggsave("figs/sampling_density_mosel.png", gap_map, width = 7, height = 6, dpi = 150)
-write.csv(occ_clean, "data-clean/salamander_occ_clean.csv", row.names = FALSE)
+ggsave("figs/recording_intensity_mosel.png", gap_map, width = 7, height = 6, dpi = 150)
+write.csv(occ_de, "data-clean/salamander_occ_de.csv", row.names = FALSE)
 usethis::use_git_ignore("data-clean/")
-
