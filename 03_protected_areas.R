@@ -40,9 +40,10 @@ pa_map <- ggplot() +
   labs(
     title    = "Fire salamander records vs protected areas — Mosel/Eifel (Germany)",
     subtitle = paste(n_de, "reported occurrences · green = land, darker green = protected"),
-    caption  = "Green: WDPA protected areas. Records presence-only; blank = no records, NOT confirmed absence."
+    caption  = "Green: WDPA protected areas. GBIF citizen-science records. Blank = no records, not confirmed absence."
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.caption = element_text(hjust = 0))
 
 pa_map
 

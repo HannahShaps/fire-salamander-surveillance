@@ -122,9 +122,10 @@ gap_map <- ggplot() +
   labs(
     title    = "Fire salamander reported occurrences — Mosel/Eifel (Germany)",
     subtitle = paste(n_de, "reported occurrences · records per ~5 km cell"),
-    caption  = "GBIF citizen-science records. Counts reflect reporting, not just abundance; blank = no records, NOT confirmed absence."
+    caption  = "GBIF citizen-science records. Blank = no records, not confirmed absence."
     ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.caption = element_text(hjust = 0))
 
 gap_map
 

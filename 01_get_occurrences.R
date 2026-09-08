@@ -31,7 +31,8 @@ ggplot() +
     subtitle = paste(nrow(occ_de), "reported occurrences"),
     caption  = "GBIF citizen-science records. Presence-only: shows where recorded, not where surveyed."
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.caption = element_text(hjust = 0))
 
 dir.create("figs", showWarnings = FALSE)
 ggsave("figs/salamander_occurrences_mosel.png", width = 9, height = 6, dpi = 150)
