@@ -46,4 +46,4 @@ pa_map <- ggplot() +
 
 pa_map
 
-ggsave("figs/reported_occurrences_protected_mosel.png", pa_map, width = 7, height = 6, dpi = 150)
+ggsave("figs/reported_occurrences_protected_mosel.png", pa_map, width = 9, height = 6, dpi = 150)

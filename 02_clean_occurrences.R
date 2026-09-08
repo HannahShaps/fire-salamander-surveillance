@@ -6,7 +6,7 @@
 # install.packages(c("rgbif","dplyr","ggplot2","sf","rnaturalearth",
 #                     "rnaturalearthdata","CoordinateCleaner","ggrepel","usethis"))
 
-install.packages("ggrepel")
+#install.packages("ggrepel")
 library(rgbif)
 library(dplyr)
 library(ggplot2)
@@ -131,7 +131,7 @@ gap_map
 # --- 6. save outputs ---
 dir.create("figs",       showWarnings = FALSE)
 dir.create("data-clean", showWarnings = FALSE)
-ggsave("figs/reported_occurrences_mosel.png", gap_map, width = 7, height = 6, dpi = 150)
+ggsave("figs/reported_occurrences_mosel.png", gap_map, width = 9, height = 6, dpi = 150)
 
 occ_out <- as.data.frame(sf::st_drop_geometry(occ_de))
 occ_out <- occ_out[, !sapply(occ_out, is.list)]        # keep only plain columns

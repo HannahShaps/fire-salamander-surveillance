@@ -34,4 +34,4 @@ ggplot() +
   theme_minimal()
 
 dir.create("figs", showWarnings = FALSE)
-ggsave("figs/salamander_occurrences_mosel.png", width = 7, height = 6, dpi = 150)
+ggsave("figs/salamander_occurrences_mosel.png", width = 9, height = 6, dpi = 150)
